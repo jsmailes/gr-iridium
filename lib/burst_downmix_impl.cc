@@ -399,30 +399,35 @@ void burst_downmix_impl::update_buffer_sizes(size_t burst_size)
         d_max_burst_size = burst_size;
         if (d_frame) {
             volk_free(d_frame);
+            d_frame = NULL;
         }
         d_frame = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
                                            volk_get_alignment());
 
         if (d_tmp_a) {
             volk_free(d_tmp_a);
+            d_tmp_a = NULL;
         }
         d_tmp_a = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
                                            volk_get_alignment());
 
         if (d_tmp_b) {
             volk_free(d_tmp_b);
+            d_tmp_b = NULL;
         }
         d_tmp_b = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
                                            volk_get_alignment());
 
         if (d_magnitude_f) {
             volk_free(d_magnitude_f);
+            d_magnitude_f = NULL;
         }
         d_magnitude_f =
             (float*)volk_malloc(d_max_burst_size * sizeof(float), volk_get_alignment());
 
         if (d_magnitude_filtered_f) {
             volk_free(d_magnitude_filtered_f);
+            d_magnitude_filtered_f = NULL;
         }
         d_magnitude_filtered_f =
             (float*)volk_malloc(d_max_burst_size * sizeof(float), volk_get_alignment());
