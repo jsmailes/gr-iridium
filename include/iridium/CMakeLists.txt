@@ -15,6 +15,7 @@ install(FILES
     iuchar_to_complex.h
     tagged_burst_to_pdu.h
     burst_downmix.h
+    header_extract.h
     pdu_null_sink.h
     iridium_qpsk_demod.h
     pdu_round_robin.h

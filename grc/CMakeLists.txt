@@ -10,6 +10,7 @@ install(FILES
     iridium_iuchar_to_complex.block.yml
     iridium_tagged_burst_to_pdu.block.yml
     iridium_burst_downmix.block.yml
+    iridium_header_extract.block.yml
     iridium_pdu_null_sink.block.yml
     iridium_iridium_qpsk_demod.block.yml
     iridium_pdu_round_robin.block.yml
