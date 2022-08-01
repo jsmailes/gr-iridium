@@ -40,7 +40,7 @@ outputs:
 
 templates:
     imports: import iridium
-    make: iridium.burst_downmix(${correlation_sample_rate}, ${output_samples}, ${search_depth}, ${hard_max_queue_len},
+    make: iridium.header_extract(${correlation_sample_rate}, ${output_samples}, ${search_depth}, ${hard_max_queue_len},
         ${input_taps}, ${start_finder_taps}, ${handle_multiple_frames_per_burst})
 
 file_format: 1
