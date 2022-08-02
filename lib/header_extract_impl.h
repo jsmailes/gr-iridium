@@ -52,6 +52,7 @@ private:
     gr_complex* d_tmp_a;
     gr_complex* d_tmp_b;
     gr_complex* d_tmp_c;
+    gr_complex* d_tmp_d;
     gr_complex* d_dl_preamble_reversed_conj_fft;
     gr_complex* d_ul_preamble_reversed_conj_fft;
 

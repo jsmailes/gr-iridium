@@ -145,6 +145,7 @@ header_extract_impl::header_extract_impl(int correlation_sample_rate,
       d_tmp_a(NULL),
       d_tmp_b(NULL),
       d_tmp_c(NULL),
+      d_tmp_d(NULL),
       d_dl_preamble_reversed_conj_fft(NULL),
       d_ul_preamble_reversed_conj_fft(NULL),
 
@@ -199,6 +200,9 @@ header_extract_impl::~header_extract_impl()
     }
     if (d_tmp_c) {
         volk_free(d_tmp_c);
+    }
+    if (d_tmp_d) {
+        volk_free(d_tmp_d);
     }
     if (d_magnitude_f) {
         volk_free(d_magnitude_f);
@@ -431,6 +435,13 @@ void header_extract_impl::update_buffer_sizes(size_t burst_size)
             d_tmp_c = NULL;
         }
         d_tmp_c = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
+                                           volk_get_alignment());
+
+        if (d_tmp_d) {
+            volk_free(d_tmp_d);
+            d_tmp_d = NULL;
+        }
+        d_tmp_d = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
                                            volk_get_alignment());
 
         if (d_magnitude_f) {
@@ -830,8 +841,6 @@ void header_extract_impl::handler(pmt::pmt_t msg)
     d_r.rotateN(d_tmp_a, burst, burst_size);
     center_frequency += relative_frequency * sample_rate;
 
-    memcpy(d_tmp_c, d_tmp_a, burst_size);
-
     /*
      * Apply the initial low pass filter and decimate the burst.
      */
@@ -852,6 +861,7 @@ void header_extract_impl::handler(pmt::pmt_t msg)
 #endif
 
     d_input_fir.filterNdec(d_frame, d_tmp_a, burst_size, decimation);
+    d_input_fir.filterNdec(d_tmp_c, d_tmp_a, burst_size * decimation, 1);
 
     sample_rate /= decimation;
 
