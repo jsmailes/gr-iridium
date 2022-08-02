@@ -51,6 +51,7 @@ private:
     gr_complex* d_frame;
     gr_complex* d_tmp_a;
     gr_complex* d_tmp_b;
+    gr_complex* d_tmp_c;
     gr_complex* d_dl_preamble_reversed_conj_fft;
     gr_complex* d_ul_preamble_reversed_conj_fft;
 
@@ -81,7 +82,8 @@ private:
                            size_t burst_size,
                            int start,
                            float noise,
-                           float magnitude);
+                           float magnitude,
+			   int decimation);
 
     void update_buffer_sizes(size_t burst_size);
     void initialize_cfo_est_fft(void);

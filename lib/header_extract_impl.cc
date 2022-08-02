@@ -144,6 +144,7 @@ header_extract_impl::header_extract_impl(int correlation_sample_rate,
       d_frame(NULL),
       d_tmp_a(NULL),
       d_tmp_b(NULL),
+      d_tmp_c(NULL),
       d_dl_preamble_reversed_conj_fft(NULL),
       d_ul_preamble_reversed_conj_fft(NULL),
 
@@ -195,6 +196,9 @@ header_extract_impl::~header_extract_impl()
     }
     if (d_tmp_b) {
         volk_free(d_tmp_b);
+    }
+    if (d_tmp_c) {
+        volk_free(d_tmp_c);
     }
     if (d_magnitude_f) {
         volk_free(d_magnitude_f);
@@ -422,6 +426,13 @@ void header_extract_impl::update_buffer_sizes(size_t burst_size)
         d_tmp_b = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
                                            volk_get_alignment());
 
+        if (d_tmp_c) {
+            volk_free(d_tmp_c);
+            d_tmp_c = NULL;
+        }
+        d_tmp_c = (gr_complex*)volk_malloc(d_max_burst_size * sizeof(gr_complex),
+                                           volk_get_alignment());
+
         if (d_magnitude_f) {
             volk_free(d_magnitude_f);
             d_magnitude_f = NULL;
@@ -483,7 +494,8 @@ int header_extract_impl::process_next_frame(float sample_rate,
                                            size_t burst_size,
                                            int start,
                                            float noise,
-                                           float magnitude)
+                                           float magnitude,
+					   int decimation)
 {
     /*
      * Use the center frequency to make some assumptions about the burst.
@@ -731,9 +743,11 @@ int header_extract_impl::process_next_frame(float sample_rate,
      * Done :)
      */
     pmt::pmt_t pdu_meta = pmt::make_dict();
-    pmt::pmt_t pdu_vector = pmt::init_c32vector(frame_size, d_tmp_b + uw_start);
+    //pmt::pmt_t pdu_vector = pmt::init_c32vector(frame_size, d_tmp_b + uw_start);
+    int output_samples = std::min((int)((frame_size - start) * decimation), d_output_samples);
+    pmt::pmt_t pdu_vector = pmt::init_c32vector(output_samples, d_tmp_c + (start * decimation));
 
-    pdu_meta = pmt::dict_add(pdu_meta, pmt::mp("sample_rate"), pmt::mp(sample_rate));
+    pdu_meta = pmt::dict_add(pdu_meta, pmt::mp("sample_rate"), pmt::mp(sample_rate * decimation));
     pdu_meta =
         pmt::dict_add(pdu_meta, pmt::mp("center_frequency"), pmt::mp(center_frequency));
     pdu_meta = pmt::dict_add(pdu_meta, pmt::mp("direction"), pmt::mp((int)direction));
@@ -816,6 +830,7 @@ void header_extract_impl::handler(pmt::pmt_t msg)
     d_r.rotateN(d_tmp_a, burst, burst_size);
     center_frequency += relative_frequency * sample_rate;
 
+    memcpy(d_tmp_c, d_tmp_a, burst_size);
 
     /*
      * Apply the initial low pass filter and decimate the burst.
@@ -907,7 +922,8 @@ void header_extract_impl::handler(pmt::pmt_t msg)
                                                  burst_size,
                                                  start,
                                                  noise,
-                                                 magnitude);
+                                                 magnitude,
+						 decimation);
             start += handled_samples;
             // This is OK as ids are incremented by 10 by the burst tagger
             sub_id++;
@@ -920,7 +936,8 @@ void header_extract_impl::handler(pmt::pmt_t msg)
                            burst_size,
                            start,
                            noise,
-                           magnitude);
+                           magnitude,
+			   decimation);
     }
 
     message_port_pub(pmt::mp("burst_handled"), pmt::mp(id));
